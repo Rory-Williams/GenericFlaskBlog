@@ -96,7 +96,7 @@ def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # if hasattr(current_user, 'id'): # Doesnt work!?
-        if not current_user.is_authenticated:
+        if current_user.is_authenticated:
             if current_user.id == 1:
                 return f(*args, **kwargs)
             else:
@@ -264,5 +264,5 @@ def delete_post(post_id):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
-    # app.run(debug=True)
+    # app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
