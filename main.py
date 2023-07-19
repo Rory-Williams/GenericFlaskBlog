@@ -13,8 +13,9 @@ from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 import os
 
-app = Flask(__name__)
+# main flask app loop
 
+app = Flask(__name__)
 
 ckeditor = CKEditor(app)
 Bootstrap(app)
@@ -43,7 +44,7 @@ gravatar = Gravatar(app,
                     use_ssl=False,
                     base_url=None)
 
-##CONFIGURE TABLES
+##CONFIGURE DATABASE TABLES
 
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
@@ -80,8 +81,8 @@ class Comment(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey("blog_posts.id"))
     parent_post = relationship("BlogPost", back_populates="comments")
 
-
 db.create_all()
+
 
 # setup login bits
 login_manager = LoginManager()
@@ -107,13 +108,13 @@ def admin_only(f):
             return abort(403)
     return decorated_function
 
-
+# main page route
 @app.route('/')
 def get_all_posts():
     posts = BlogPost.query.all()
     return render_template("index.html", all_posts=posts)
 
-
+# register a user route
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
@@ -144,7 +145,7 @@ def register():
 
     return render_template("register.html", form=form)
 
-
+# login route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -171,14 +172,14 @@ def login():
 
     return render_template("login.html", form=form)
 
-
+# log out route, only for logged in users
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('get_all_posts'))
 
-
+# blog post route
 @app.route("/post/<int:post_id>", methods=['GET', 'POST'])
 def show_post(post_id):
     requested_post = BlogPost.query.get(post_id)
@@ -202,17 +203,17 @@ def show_post(post_id):
 
     return render_template("post.html", post=requested_post, form=form)
 
-
+# about page for blog
 @app.route("/about")
 def about():
     return render_template("about.html")
 
-
+# contact page for blog
 @app.route("/contact")
 def contact():
     return render_template("contact.html")
 
-
+# post creation page for admins
 @app.route("/new-post", methods=['GET', 'POST'])
 @admin_only
 def add_new_post():
@@ -231,7 +232,7 @@ def add_new_post():
         return 0
     return render_template("make-post.html", form=form)
 
-
+# edit post page for admins
 @app.route("/edit-post/<int:post_id>", methods=['GET', 'POST'])
 @admin_only
 def edit_post(post_id):
@@ -253,7 +254,7 @@ def edit_post(post_id):
 
     return render_template("make-post.html", form=edit_form)
 
-
+# delete post and update database for admins
 @app.route("/delete/<int:post_id>")
 @admin_only
 def delete_post(post_id):
